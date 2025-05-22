@@ -57,7 +57,7 @@ kernel void ele_ini(const  struct msh_obj  msh,
     
     float3 x = msh.dx*(convert_float3(ele_pos) + 0.5f);
     
-    float u = sin(x.x);
+    float u = sin(M_PI*x.x);
     
     //write
     uu[ele_idx] = u*utl_bnd2(ele_pos, msh.ne);
@@ -83,7 +83,7 @@ kernel void ele_fwd(const  struct msh_obj   msh,
                     global float            *uu,
                     global float            *bb)
 {
-    int3    ele_pos = (int3){get_global_id(0), get_global_id(1), get_global_id(2)};
+    int3    ele_pos = (int3){get_global_id(0), get_global_id(1), get_global_id(2)} + 1; //interior
     int     ele_idx = utl_idx1(ele_pos, msh.ne);
     
     float s = 0.0f;
@@ -98,7 +98,7 @@ kernel void ele_fwd(const  struct msh_obj   msh,
     }
     
     //store
-    bb[ele_idx] = msh.rdx2*(s - 6.0f*uu[ele_idx]);
+    bb[ele_idx] = msh.rdx2*(6.0f*uu[ele_idx] - s);
     
     return;
 }
@@ -111,7 +111,7 @@ kernel void ele_res(const  struct msh_obj   msh,
                     global float            *bb,
                     global float            *rr)
 {
-    int3    ele_pos = (int3){get_global_id(0), get_global_id(1), get_global_id(2)};
+    int3    ele_pos = (int3){get_global_id(0), get_global_id(1), get_global_id(2)} + 1; //interior
     int     ele_idx = utl_idx1(ele_pos, msh.ne);
     
     float s = 0.0f;
@@ -126,7 +126,7 @@ kernel void ele_res(const  struct msh_obj   msh,
     }
     
     //scale
-    float Au = msh.rdx2*(s - 6.0f*uu[ele_idx]);
+    float Au = msh.rdx2*(6.0f*uu[ele_idx] - s);
     
     //store
     rr[ele_idx] = bb[ele_idx] - Au;
@@ -140,11 +140,11 @@ kernel void ele_jac(const  struct msh_obj   msh,
                     global float            *uu,
                     global float            *rr)
 {
-    int3  ele_pos  = (int3){get_global_id(0), get_global_id(1), get_global_id(2)};
+    int3  ele_pos  = (int3){get_global_id(0), get_global_id(1), get_global_id(2)} + 1; //interior
     int   ele_idx  = utl_idx1(ele_pos, msh.ne);
     
     //du = D^-1(r)
-    uu[ele_idx] += msh.dx2*rr[ele_idx]/6.0f;
+    uu[ele_idx] += 0.9f*msh.dx2*rr[ele_idx]/6.0f;
     
     return;
 }

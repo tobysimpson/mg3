@@ -46,7 +46,7 @@ int main(int argc, const char * argv[])
     //multigrid
     struct mg_obj mg;
     mg.nl = msh.le.x;
-    mg.nj = 5;
+    mg.nj = 10;
     mg.nc = 10;
     mg_ini(&ocl, &mg, &msh);
     
@@ -75,8 +75,12 @@ int main(int argc, const char * argv[])
         //fwd
         mg_fwd(&ocl, &mg, &mg.ops[0], lvl);
         
-        //norms
+//        //jac
+//        mg_jac(&ocl, &mg, &mg.ops[0], lvl);
+//        
+//        //norms
 //        mg_nrm(&ocl, &mg, lvl);
+        
         
 //        //sum
 //        float s = mg_red(&ocl, &mg, lvl->ee, lvl->msh.ne_tot);
@@ -88,10 +92,10 @@ int main(int argc, const char * argv[])
     
     //write
     wrt_xmf(&ocl, &msh, 0);
-    wrt_flt1(&ocl, &msh, &mg.lvls[0].uu, "uu", 0, msh.nv_tot);
-    wrt_flt1(&ocl, &msh, &mg.lvls[0].bb, "bb", 0, msh.nv_tot);
-    wrt_flt1(&ocl, &msh, &mg.lvls[0].rr, "rr", 0, msh.nv_tot);
-    wrt_flt1(&ocl, &msh, &mg.lvls[0].aa, "aa", 0, msh.nv_tot);
+    wrt_flt1(&ocl, &msh, &mg.lvls[0].uu, "uu", 0, msh.ne_tot);
+    wrt_flt1(&ocl, &msh, &mg.lvls[0].bb, "bb", 0, msh.ne_tot);
+    wrt_flt1(&ocl, &msh, &mg.lvls[0].rr, "rr", 0, msh.ne_tot);
+    wrt_flt1(&ocl, &msh, &mg.lvls[0].aa, "aa", 0, msh.ne_tot);
 
     
     /*

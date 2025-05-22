@@ -138,7 +138,7 @@ void mg_itp(struct ocl_obj *ocl, struct mg_obj *mg, struct lvl_obj *lf, struct l
     ocl->err = clSetKernelArg(mg->ele_itp,  2, sizeof(cl_mem),            (void*)&lf->uu);      //fine
     
     //interp
-    ocl->err = clEnqueueNDRangeKernel(ocl->command_queue, mg->ele_itp, 3, NULL, lf->msh.ie_sz, NULL, 0, NULL, NULL);
+    ocl->err = clEnqueueNDRangeKernel(ocl->command_queue, mg->ele_itp, 3, NULL, lf->msh.ne_sz, NULL, 0, NULL, NULL);
     
     return;
 }
@@ -154,7 +154,7 @@ void mg_prj(struct ocl_obj *ocl, struct mg_obj *mg, struct lvl_obj *lf, struct l
     ocl->err = clSetKernelArg(mg->ele_prj,  3, sizeof(cl_mem),            (void*)&lc->bb);      //coarse
     
     //project
-    ocl->err = clEnqueueNDRangeKernel(ocl->command_queue, mg->ele_prj, 3, NULL, lc->msh.ie_sz, NULL, 0, NULL, NULL);
+    ocl->err = clEnqueueNDRangeKernel(ocl->command_queue, mg->ele_prj, 3, NULL, lc->msh.ne_sz, NULL, 0, NULL, NULL);
     
     return;
 }
