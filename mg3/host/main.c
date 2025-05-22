@@ -47,7 +47,7 @@ int main(int argc, const char * argv[])
     struct mg_obj mg;
     mg.nl = msh.le.x;
     mg.nj = 10;
-    mg.nc = 20;
+    mg.nc = 10;
     mg_ini(&ocl, &mg, &msh);
     
     /*

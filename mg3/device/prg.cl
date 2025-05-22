@@ -57,7 +57,7 @@ kernel void ele_ini(const  struct msh_obj  msh,
     
     float3 x = msh.dx*(convert_float3(ele_pos) + 0.5f);
     
-    float u = sin(M_PI*x.x);
+    float u = x.x*x.y*x.z;
     
     //write
     uu[ele_idx] = u*utl_bnd2(ele_pos, msh.ne);
@@ -144,7 +144,7 @@ kernel void ele_jac(const  struct msh_obj   msh,
     int   ele_idx  = utl_idx1(ele_pos, msh.ne);
     
     //du = D^-1(r)
-    uu[ele_idx] += 0.99f*msh.dx2*rr[ele_idx]/6.0f;
+    uu[ele_idx] += msh.dx2*rr[ele_idx]/6.0f; //0.9
     
     return;
 }
