@@ -48,8 +48,7 @@ void mg_ini(struct ocl_obj *ocl, struct mg_obj *mg, struct msh_obj *msh)
     mg->ele_itp = clCreateKernel(ocl->program, "ele_itp", &ocl->err);
     
     //err
-    mg->ele_rsq = clCreateKernel(ocl->program, "ele_rsq", &ocl->err);
-    mg->ele_esq = clCreateKernel(ocl->program, "ele_esq", &ocl->err);
+    mg->ele_err = clCreateKernel(ocl->program, "ele_err", &ocl->err);
     mg->vec_sum = clCreateKernel(ocl->program, "vec_sum", &ocl->err);
     
     //poisson
@@ -212,29 +211,25 @@ void mg_cyc(struct ocl_obj *ocl, struct mg_obj *mg, struct op_obj *op)
 //norms
 void mg_nrm(struct ocl_obj *ocl, struct mg_obj *mg, struct lvl_obj *lvl)
 {
-    //arg
-    ocl->err = clSetKernelArg(mg->ele_rsq,  0, sizeof(struct msh_obj),    (void*)&lvl->msh);
-    ocl->err = clSetKernelArg(mg->ele_rsq,  1, sizeof(cl_mem),            (void*)&lvl->rr);
-    
-    //res sq
-    ocl->err = clEnqueueNDRangeKernel(ocl->command_queue, mg->ele_rsq, 3, NULL, lvl->msh.ne_sz, NULL, 0, NULL, NULL);
+    //resid
     float r = mg_red(ocl, mg, lvl->rr, lvl->msh.ne_tot);
     
-    //arg
-    ocl->err = clSetKernelArg(mg->ele_esq,  0, sizeof(struct msh_obj),    (void*)&lvl->msh);
-    ocl->err = clSetKernelArg(mg->ele_esq,  1, sizeof(cl_mem),            (void*)&lvl->uu);
-    ocl->err = clSetKernelArg(mg->ele_esq,  2, sizeof(cl_mem),            (void*)&lvl->aa);
-    ocl->err = clSetKernelArg(mg->ele_esq,  3, sizeof(cl_mem),            (void*)&lvl->rr);
+    //err
+    ocl->err = clSetKernelArg(mg->ele_err,  0, sizeof(struct msh_obj),    (void*)&lvl->msh);
+    ocl->err = clSetKernelArg(mg->ele_err,  1, sizeof(cl_mem),            (void*)&lvl->uu);
+    ocl->err = clSetKernelArg(mg->ele_err,  2, sizeof(cl_mem),            (void*)&lvl->aa);
+    ocl->err = clSetKernelArg(mg->ele_err,  3, sizeof(cl_mem),            (void*)&lvl->rr);
     
-    //err sq
-    ocl->err = clEnqueueNDRangeKernel(ocl->command_queue, mg->ele_esq, 3, NULL, lvl->msh.ne_sz, NULL, 0, NULL, &ocl->event);
+    //err
+    ocl->err = clEnqueueNDRangeKernel(ocl->command_queue, mg->ele_err, 3, NULL, lvl->msh.ne_sz, NULL, 0, NULL, &ocl->event);
     float e = mg_red(ocl, mg, lvl->rr, lvl->msh.ne_tot);
     
-    float dx3 = lvl->msh.dx*lvl->msh.dx2;
+//    float dx3 = lvl->msh.dx*lvl->msh.dx2;
     
     //norms
 //    printf("nrm [%2u,%2u,%2u] %+e %+e  %+e %+e  %+e %+e\n", lvl->msh.le.x, lvl->msh.le.y, lvl->msh.le.z, r, e, dx3*r, dx3*e, sqrt(dx3*r), sqrt(dx3*e));
-    printf("nrm [%2u,%2u,%2u] %+e %+e\n", lvl->msh.le.x, lvl->msh.le.y, lvl->msh.le.z, sqrt(dx3*r), sqrt(dx3*e));
+//    printf("nrm [%2u,%2u,%2u] %+e %+e\n", lvl->msh.le.x, lvl->msh.le.y, lvl->msh.le.z, sqrt(dx3*r), sqrt(dx3*e));
+    printf("nrm [%2u,%2u,%2u] %+e %+e\n", lvl->msh.le.x, lvl->msh.le.y, lvl->msh.le.z, r, e);
     
     return;
 }
@@ -277,8 +272,7 @@ void mg_fin(struct ocl_obj *ocl, struct mg_obj *mg)
     ocl->err = clReleaseKernel(mg->ele_prj);
     ocl->err = clReleaseKernel(mg->ele_itp);
     
-    ocl->err = clReleaseKernel(mg->ele_rsq);
-    ocl->err = clReleaseKernel(mg->ele_esq);
+    ocl->err = clReleaseKernel(mg->ele_err);
     ocl->err = clReleaseKernel(mg->vec_sum);
     
     ocl->err = clReleaseKernel(mg->ops[0].ele_res);

@@ -38,7 +38,7 @@ int main(int argc, const char * argv[])
     
     //mesh
     struct msh_obj msh;
-    msh.le = (cl_int3){5,5,5};
+    msh.le = (cl_int3){10,10,10};
     msh.dx = powf(2e0f, -msh.le.x); //[0,1]ˆ3
     msh.dt = 0.25f;
     msh_ini(&msh);
@@ -47,7 +47,7 @@ int main(int argc, const char * argv[])
     struct mg_obj mg;
     mg.nl = msh.le.x;
     mg.nj = 10;
-    mg.nc = 10;
+    mg.nc = 20;
     mg_ini(&ocl, &mg, &msh);
     
     /*
@@ -90,12 +90,12 @@ int main(int argc, const char * argv[])
     //solve
     mg_cyc(&ocl, &mg, &mg.ops[0]);
     
-    //write
-    wrt_xmf(&ocl, &msh, 0);
-    wrt_flt1(&ocl, &msh, &mg.lvls[0].uu, "uu", 0, msh.ne_tot);
-    wrt_flt1(&ocl, &msh, &mg.lvls[0].bb, "bb", 0, msh.ne_tot);
-    wrt_flt1(&ocl, &msh, &mg.lvls[0].rr, "rr", 0, msh.ne_tot);
-    wrt_flt1(&ocl, &msh, &mg.lvls[0].aa, "aa", 0, msh.ne_tot);
+//    //write
+//    wrt_xmf(&ocl, &msh, 0);
+//    wrt_flt1(&ocl, &msh, &mg.lvls[0].uu, "uu", 0, msh.ne_tot);
+//    wrt_flt1(&ocl, &msh, &mg.lvls[0].bb, "bb", 0, msh.ne_tot);
+//    wrt_flt1(&ocl, &msh, &mg.lvls[0].rr, "rr", 0, msh.ne_tot);
+//    wrt_flt1(&ocl, &msh, &mg.lvls[0].aa, "aa", 0, msh.ne_tot);
 
     
     /*

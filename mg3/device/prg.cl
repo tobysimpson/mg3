@@ -144,7 +144,7 @@ kernel void ele_jac(const  struct msh_obj   msh,
     int   ele_idx  = utl_idx1(ele_pos, msh.ne);
     
     //du = D^-1(r)
-    uu[ele_idx] += 0.9f*msh.dx2*rr[ele_idx]/6.0f;
+    uu[ele_idx] += 0.99f*msh.dx2*rr[ele_idx]/6.0f;
     
     return;
 }
@@ -217,22 +217,22 @@ kernel void ele_itp(const  struct msh_obj   mshf,    //fine      (out)
  */
 
 
-//residual squared
-kernel void ele_rsq(const  struct msh_obj   msh,
-                    global float            *rr)
-{
-    int3  ele_pos  = {get_global_id(0), get_global_id(1), get_global_id(2)};
-    int   ele_idx  = utl_idx1(ele_pos, msh.ne);
-    
-    //square/write
-    rr[ele_idx] = pown(rr[ele_idx],2.0f);
-    
-    return;
-}
+////residual squared
+//kernel void ele_rsq(const  struct msh_obj   msh,
+//                    global float            *rr)
+//{
+//    int3  ele_pos  = {get_global_id(0), get_global_id(1), get_global_id(2)};
+//    int   ele_idx  = utl_idx1(ele_pos, msh.ne);
+//    
+//    //square/write
+//    rr[ele_idx] = pown(rr[ele_idx],2.0f);
+//    
+//    return;
+//}
 
 
 //error squared
-kernel void ele_esq(const  struct msh_obj   msh,
+kernel void ele_err(const  struct msh_obj   msh,
                     global float            *uu,
                     global float            *aa,
                     global float            *rr)
@@ -240,11 +240,8 @@ kernel void ele_esq(const  struct msh_obj   msh,
     int3  ele_pos  = {get_global_id(0), get_global_id(1), get_global_id(2)};
     int   ele_idx  = utl_idx1(ele_pos, msh.ne);
     
-    //sum
-    float r = aa[ele_idx] - uu[ele_idx];
-
     //square/write
-    rr[ele_idx] = pow(r,2.0f);
+    rr[ele_idx] = aa[ele_idx] - uu[ele_idx];
     
     return;
 }
@@ -256,7 +253,26 @@ kernel void ele_esq(const  struct msh_obj   msh,
  */
 
 
-//fold
+////fold
+//kernel void vec_sum(global float *uu,
+//                    const  int   n)
+//{
+//    int i = get_global_id(0);
+//    int m = get_global_size(0);
+//
+////    printf("%d %d %d %f %f\n",i, n, m, uu[i], uu[m+i]);
+//    
+//    if((m+i)<n)
+//    {
+//        uu[i] += uu[m+i];
+//    }
+//      
+//    return;
+//}
+
+
+
+//fold - inf
 kernel void vec_sum(global float *uu,
                     const  int   n)
 {
@@ -265,9 +281,12 @@ kernel void vec_sum(global float *uu,
 
 //    printf("%d %d %d %f %f\n",i, n, m, uu[i], uu[m+i]);
     
+    float u1 = uu[i];
+    float u2 = uu[m+i];
+    
     if((m+i)<n)
     {
-        uu[i] += uu[m+i];
+        uu[i] = (fabs(u1)>fabs(u2))?u1:u2;
     }
       
     return;
