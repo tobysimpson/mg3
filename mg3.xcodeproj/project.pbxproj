@@ -9,12 +9,12 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		DA990C602DDF495300156A6D /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
+			buildActionMask = 12;
+			dstPath = "";
+			dstSubfolderSpec = 16;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 1;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -22,9 +22,34 @@
 		DA990C622DDF495300156A6D /* mg3 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = mg3; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		DA990C802DDF4E8200156A6D /* Exceptions for "mg3" folder in "mg3" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				device/prg.cl,
+			);
+			target = DA990C612DDF495300156A6D /* mg3 */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		DA990C7F2DDF49D900156A6D /* Exceptions for "mg3" folder in "Copy Files" phase from "mg3" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = DA990C602DDF495300156A6D /* CopyFiles */;
+			membershipExceptions = (
+				device/prg.cl,
+				device/utl.h,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		DA990C642DDF495300156A6D /* mg3 */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				DA990C802DDF4E8200156A6D /* Exceptions for "mg3" folder in "mg3" target */,
+				DA990C7F2DDF49D900156A6D /* Exceptions for "mg3" folder in "Copy Files" phase from "mg3" target */,
+			);
 			path = mg3;
 			sourceTree = "<group>";
 		};
