@@ -54,7 +54,8 @@ struct mg_obj
     cl_kernel       ele_itp;
     
     //err
-    cl_kernel       ele_err;
+    cl_kernel       ele_rsq;
+    cl_kernel       ele_esq;
     cl_kernel       vec_sum;
     
     //ops

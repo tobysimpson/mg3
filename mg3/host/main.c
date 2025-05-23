@@ -22,6 +22,7 @@
 
 
 //multigrid benchmark - FVM by element
+//not as good as vtx because of dirichlet conditions
 int main(int argc, const char * argv[])
 {
     printf("hello\n");
@@ -38,7 +39,7 @@ int main(int argc, const char * argv[])
     
     //mesh
     struct msh_obj msh;
-    msh.le = (cl_int3){10,10,10};
+    msh.le = (cl_int3){4,4,4};
     msh.dx = powf(2e0f, -msh.le.x); //[0,1]ˆ3
     msh.dt = 0.25f;
     msh_ini(&msh);
@@ -46,7 +47,7 @@ int main(int argc, const char * argv[])
     //multigrid
     struct mg_obj mg;
     mg.nl = msh.le.x;
-    mg.nj = 10;
+    mg.nj = 5;
     mg.nc = 10;
     mg_ini(&ocl, &mg, &msh);
     
@@ -73,29 +74,25 @@ int main(int argc, const char * argv[])
         ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, mg.ele_ini, 3, NULL, msh.ne_sz, NULL, 0, NULL, &ocl.event);
         
         //fwd
-        mg_fwd(&ocl, &mg, &mg.ops[0], lvl);
+//        mg_fwd(&ocl, &mg, &mg.ops[0], lvl);
         
-//        //jac
-//        mg_jac(&ocl, &mg, &mg.ops[0], lvl);
-//        
-//        //norms
-//        mg_nrm(&ocl, &mg, lvl);
+        //jac
+        mg_jac(&ocl, &mg, &mg.ops[0], lvl);
         
+        //norms
+        mg_nrm(&ocl, &mg, lvl);
         
-//        //sum
-//        float s = mg_red(&ocl, &mg, lvl->ee, lvl->msh.ne_tot);
-//        printf("sum %10d %+18.6f\n", lvl->msh.nv_tot, s);
     }
     
     //solve
     mg_cyc(&ocl, &mg, &mg.ops[0]);
     
-//    //write
-//    wrt_xmf(&ocl, &msh, 0);
-//    wrt_flt1(&ocl, &msh, &mg.lvls[0].uu, "uu", 0, msh.ne_tot);
-//    wrt_flt1(&ocl, &msh, &mg.lvls[0].bb, "bb", 0, msh.ne_tot);
-//    wrt_flt1(&ocl, &msh, &mg.lvls[0].rr, "rr", 0, msh.ne_tot);
-//    wrt_flt1(&ocl, &msh, &mg.lvls[0].aa, "aa", 0, msh.ne_tot);
+    //write
+    wrt_xmf(&ocl, &msh, 0);
+    wrt_flt1(&ocl, &msh, &mg.lvls[0].uu, "uu", 0, msh.ne_tot);
+    wrt_flt1(&ocl, &msh, &mg.lvls[0].bb, "bb", 0, msh.ne_tot);
+    wrt_flt1(&ocl, &msh, &mg.lvls[0].rr, "rr", 0, msh.ne_tot);
+    wrt_flt1(&ocl, &msh, &mg.lvls[0].aa, "aa", 0, msh.ne_tot);
 
     
     /*

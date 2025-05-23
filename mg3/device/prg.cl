@@ -57,15 +57,14 @@ kernel void ele_ini(const  struct msh_obj  msh,
     
     float3 x = msh.dx*(convert_float3(ele_pos) + 0.5f);
     
-    float u = x.x*x.y*x.z;
+    float u = sin(x.x);
     
     //write
     uu[ele_idx] = u*utl_bnd2(ele_pos, msh.ne);
-    bb[ele_idx] = 0e0f;
+    bb[ele_idx] = sin(x.x);
     rr[ele_idx] = 0e0f;
-    aa[ele_idx] = u;
+    aa[ele_idx] = sin(x.x);
 
-    
     return;
 }
 
@@ -129,7 +128,7 @@ kernel void ele_res(const  struct msh_obj   msh,
     float Au = msh.rdx2*(6.0f*uu[ele_idx] - s);
     
     //store
-    rr[ele_idx] = bb[ele_idx] - Au;
+    rr[ele_idx] = bb[ele_idx] - Au; //*h
     
     return;
 }
@@ -144,7 +143,7 @@ kernel void ele_jac(const  struct msh_obj   msh,
     int   ele_idx  = utl_idx1(ele_pos, msh.ne);
     
     //du = D^-1(r)
-    uu[ele_idx] += msh.dx2*rr[ele_idx]/6.0f; //0.9
+    uu[ele_idx] += 0.9*msh.dx2*rr[ele_idx]/6.0f; //0.9
     
     return;
 }
@@ -217,22 +216,22 @@ kernel void ele_itp(const  struct msh_obj   mshf,    //fine      (out)
  */
 
 
-////residual squared
-//kernel void ele_rsq(const  struct msh_obj   msh,
-//                    global float            *rr)
-//{
-//    int3  ele_pos  = {get_global_id(0), get_global_id(1), get_global_id(2)};
-//    int   ele_idx  = utl_idx1(ele_pos, msh.ne);
-//    
-//    //square/write
-//    rr[ele_idx] = pown(rr[ele_idx],2.0f);
-//    
-//    return;
-//}
+//residual squared
+kernel void ele_rsq(const  struct msh_obj   msh,
+                    global float            *rr)
+{
+    int3  ele_pos  = {get_global_id(0), get_global_id(1), get_global_id(2)};
+    int   ele_idx  = utl_idx1(ele_pos, msh.ne);
+    
+    //square/write
+    rr[ele_idx] = pown(rr[ele_idx],2);
+    
+    return;
+}
 
 
 //error squared
-kernel void ele_err(const  struct msh_obj   msh,
+kernel void ele_esq(const  struct msh_obj   msh,
                     global float            *uu,
                     global float            *aa,
                     global float            *rr)
@@ -241,7 +240,7 @@ kernel void ele_err(const  struct msh_obj   msh,
     int   ele_idx  = utl_idx1(ele_pos, msh.ne);
     
     //square/write
-    rr[ele_idx] = aa[ele_idx] - uu[ele_idx];
+    rr[ele_idx] = pown(aa[ele_idx] - uu[ele_idx],2);
     
     return;
 }
@@ -253,26 +252,7 @@ kernel void ele_err(const  struct msh_obj   msh,
  */
 
 
-////fold
-//kernel void vec_sum(global float *uu,
-//                    const  int   n)
-//{
-//    int i = get_global_id(0);
-//    int m = get_global_size(0);
-//
-////    printf("%d %d %d %f %f\n",i, n, m, uu[i], uu[m+i]);
-//    
-//    if((m+i)<n)
-//    {
-//        uu[i] += uu[m+i];
-//    }
-//      
-//    return;
-//}
-
-
-
-//fold - inf
+//fold
 kernel void vec_sum(global float *uu,
                     const  int   n)
 {
@@ -281,12 +261,9 @@ kernel void vec_sum(global float *uu,
 
 //    printf("%d %d %d %f %f\n",i, n, m, uu[i], uu[m+i]);
     
-    float u1 = uu[i];
-    float u2 = uu[m+i];
-    
     if((m+i)<n)
     {
-        uu[i] = (fabs(u1)>fabs(u2))?u1:u2;
+        uu[i] += uu[m+i];
     }
       
     return;
