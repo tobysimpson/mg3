@@ -104,29 +104,62 @@ void mg_fwd(struct ocl_obj *ocl, struct mg_obj *mg, struct op_obj *op, struct lv
 //jacobi
 void mg_jac(struct ocl_obj *ocl, struct mg_obj *mg, struct op_obj *op, struct lvl_obj *lvl)
 {
+    ocl->err = clSetKernelArg(op->ele_jac,  0, sizeof(struct msh_obj),    (void*)&lvl->msh);
+    ocl->err = clSetKernelArg(op->ele_jac,  1, sizeof(cl_mem),            (void*)&lvl->uu);
+    ocl->err = clSetKernelArg(op->ele_jac,  2, sizeof(cl_mem),            (void*)&lvl->bb);
+    
+    //smooth
+    for(int j=0; j<mg->nj; j++)
+    {
+        ocl->err = clEnqueueNDRangeKernel(ocl->command_queue, op->ele_jac, 3, NULL, lvl->msh.ie_sz, NULL, 0, NULL, NULL);
+    }
+
+    return;
+}
+
+
+//residual
+void mg_res(struct ocl_obj *ocl, struct mg_obj *mg, struct op_obj *op, struct lvl_obj *lvl)
+{
     //args
     ocl->err = clSetKernelArg(op->ele_res,  0, sizeof(struct msh_obj),    (void*)&lvl->msh);
     ocl->err = clSetKernelArg(op->ele_res,  1, sizeof(cl_mem),            (void*)&lvl->uu);
     ocl->err = clSetKernelArg(op->ele_res,  2, sizeof(cl_mem),            (void*)&lvl->bb);
     ocl->err = clSetKernelArg(op->ele_res,  3, sizeof(cl_mem),            (void*)&lvl->rr);
-
-    ocl->err = clSetKernelArg(op->ele_jac,  0, sizeof(struct msh_obj),    (void*)&lvl->msh);
-    ocl->err = clSetKernelArg(op->ele_jac,  1, sizeof(cl_mem),            (void*)&lvl->uu);
-    ocl->err = clSetKernelArg(op->ele_jac,  2, sizeof(cl_mem),            (void*)&lvl->rr);
-    
-    //smooth
-    for(int j=0; j<mg->nj; j++)
-    {
-        //solve
-        ocl->err = clEnqueueNDRangeKernel(ocl->command_queue, op->ele_res, 3, NULL, lvl->msh.ie_sz, NULL, 0, NULL, NULL);
-        ocl->err = clEnqueueNDRangeKernel(ocl->command_queue, op->ele_jac, 3, NULL, lvl->msh.ie_sz, NULL, 0, NULL, NULL);
-    }
     
     //residual
     ocl->err = clEnqueueNDRangeKernel(ocl->command_queue, op->ele_res, 3, NULL, lvl->msh.ie_sz, NULL, 0, NULL, NULL);
     
     return;
 }
+
+
+////jacobi
+//void mg_jac(struct ocl_obj *ocl, struct mg_obj *mg, struct op_obj *op, struct lvl_obj *lvl)
+//{
+//    //args
+//    ocl->err = clSetKernelArg(op->ele_res,  0, sizeof(struct msh_obj),    (void*)&lvl->msh);
+//    ocl->err = clSetKernelArg(op->ele_res,  1, sizeof(cl_mem),            (void*)&lvl->uu);
+//    ocl->err = clSetKernelArg(op->ele_res,  2, sizeof(cl_mem),            (void*)&lvl->bb);
+//    ocl->err = clSetKernelArg(op->ele_res,  3, sizeof(cl_mem),            (void*)&lvl->rr);
+//
+//    ocl->err = clSetKernelArg(op->ele_jac,  0, sizeof(struct msh_obj),    (void*)&lvl->msh);
+//    ocl->err = clSetKernelArg(op->ele_jac,  1, sizeof(cl_mem),            (void*)&lvl->uu);
+//    ocl->err = clSetKernelArg(op->ele_jac,  2, sizeof(cl_mem),            (void*)&lvl->rr);
+//    
+//    //smooth
+//    for(int j=0; j<mg->nj; j++)
+//    {
+//        //solve
+//        ocl->err = clEnqueueNDRangeKernel(ocl->command_queue, op->ele_res, 3, NULL, lvl->msh.ie_sz, NULL, 0, NULL, NULL);
+//        ocl->err = clEnqueueNDRangeKernel(ocl->command_queue, op->ele_jac, 3, NULL, lvl->msh.ie_sz, NULL, 0, NULL, NULL);
+//    }
+//    
+//    //residual
+//    ocl->err = clEnqueueNDRangeKernel(ocl->command_queue, op->ele_res, 3, NULL, lvl->msh.ie_sz, NULL, 0, NULL, NULL);
+//    
+//    return;
+//}
 
 
 //interp
@@ -175,6 +208,9 @@ void mg_cyc(struct ocl_obj *ocl, struct mg_obj *mg, struct op_obj *op)
             //pre
             mg_jac(ocl, mg, op, lf);
             
+            //post
+            mg_res(ocl, mg, op, lf);
+            
             //prj
             mg_prj(ocl, mg, lf, lc);
             
@@ -197,6 +233,9 @@ void mg_cyc(struct ocl_obj *ocl, struct mg_obj *mg, struct op_obj *op)
             mg_jac(ocl, mg, op, lf);
             
         } //dsc
+        
+        //resid
+        mg_res(ocl, mg, op, &mg->lvls[0]);
         
         //norms
         mg_nrm(ocl, mg,  &mg->lvls[0]);

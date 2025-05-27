@@ -137,13 +137,31 @@ kernel void ele_res(const  struct msh_obj   msh,
 //jacobi
 kernel void ele_jac(const  struct msh_obj   msh,
                     global float            *uu,
-                    global float            *rr)
+                    global float            *bb)
 {
     int3  ele_pos  = (int3){get_global_id(0), get_global_id(1), get_global_id(2)} + 1; //interior
     int   ele_idx  = utl_idx1(ele_pos, msh.ne);
     
+    float s = 0e0f;
+    
+    //stencil
+    for(int i=0; i<6; i++)
+    {
+        int3    adj_pos = ele_pos + off_fac[i];
+        int     adj_idx = utl_idx1(adj_pos, msh.ne);
+        
+        s += uu[adj_idx];
+    }
+    
+    //scale
+    float Au = msh.rdx2*(6.0f*uu[ele_idx] - s);
+    
+    //store
+    float r = bb[ele_idx] - Au;
+    
+    
     //du = D^-1(r)
-    uu[ele_idx] += 0.9*msh.dx2*rr[ele_idx]/6.0f; //0.9
+    uu[ele_idx] += 0.9*msh.dx2*r/6.0f; //0.9
     
     return;
 }

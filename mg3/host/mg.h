@@ -64,7 +64,6 @@ struct mg_obj
 };
 
 
-
 //init
 void    mg_ini(struct ocl_obj *ocl, struct mg_obj *mg, struct msh_obj *msh);
 void    mg_fin(struct ocl_obj *ocl, struct mg_obj *mg);
@@ -74,6 +73,8 @@ void    mg_prj(struct ocl_obj *ocl, struct mg_obj *mg, struct lvl_obj *lf, struc
 
 void    mg_fwd(struct ocl_obj *ocl, struct mg_obj *mg, struct op_obj *op, struct lvl_obj *lvl);
 void    mg_jac(struct ocl_obj *ocl, struct mg_obj *mg, struct op_obj *op, struct lvl_obj *lvl);
+void    mg_res(struct ocl_obj *ocl, struct mg_obj *mg, struct op_obj *op, struct lvl_obj *lvl);
+
 void    mg_cyc(struct ocl_obj *ocl, struct mg_obj *mg, struct op_obj *op);
 
 float   mg_red(struct ocl_obj *ocl, struct mg_obj *mg, cl_mem uu, const cl_int n);
