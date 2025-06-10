@@ -14,6 +14,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <sys/stat.h>
 
 #include "ocl.h"
 #include "msh.h"
@@ -22,10 +23,14 @@
 
 
 //multigrid benchmark - FVM by element
-//not as good as vtx because of dirichlet conditions
+//not as good as vtx because of dirichlet conditions - neumann are fine
 int main(int argc, const char * argv[])
 {
     printf("hello\n");
+    
+    //create folders
+    mkdir("/Users/toby/Downloads/raw", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    mkdir("/Users/toby/Downloads/xmf", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     
     /*
      ====================
